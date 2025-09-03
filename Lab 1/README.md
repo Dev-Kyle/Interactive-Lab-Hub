@@ -52,15 +52,16 @@ I had no issues with using Tinkerbelle (aside from the already known bug of the 
 Take a little time to set up the wizarding set-up that allows for someone to remotely control the device while someone acts with it. Hint: You can use Zoom to record videos, and you can pin someone’s video feed if that is the scene which you want to record.
 
 \*\***Include your first attempts at recording the set-up video here.**\*\*
-![prototype interaction](media/prototype.mov)
+https://github.com/user-attachments/assets/d5b454ee-eb61-42e7-9879-bfe9019b52ec
 
 Now, hange the goal within the same setting, and update the interaction with the paper prototype.
 
 \*\***Show the follow-up work here.**\*\*
-![costumed device](costumed.mov)
 
+https://github.com/user-attachments/assets/37041e08-9c7c-493a-bfe6-323bde343240
 
 ## Part E. Costume the device
+
 
 Only now should you start worrying about what the device should look like. Develop three costumes so that you can use your phone as this device.
 
@@ -81,6 +82,7 @@ Be generous in acknowledging their contributions! And also recognizing any other
 
 
 # Staging Interaction, Part 2
+
 
 This describes the second week's work for this lab activity.
 
