@@ -129,3 +129,15 @@ A problem a lot of people struggle with is leaving on time when they have plans,
 # Act out the interaction
 
 There were a couple things that I came to realize after acting this out. My original plan was to have the light reset upon detecting the door opening, but this produces many complex situations where someone may have multiple things to do in one day, but sometimes come home between those tasks. There is no simple way to reliable reset the light on and have it detect that the person hasn't come home yet and may just go straight to their next location, which would make the light beep at 5 minutes before the next scheduled spot even if they are already there. A simpler solution to this would be to link this device to your phone not only with the calendar but also location, so if you are not home whenever a scheduled event is soon occuring it will not activate.
+
+# Prototype
+Audio seemed to not work when attempting to prototype, ended up having to substitute computer audio to simulate instead.
+
+# Wizard the Device
+
+# Costume the Device
+
+![costumed](media/Costume.JPG)
+The device structure can remain identical to the one from the original Lab implementation, since the only alteration is to the functionality of the light, not the device structure itself.
+
+# Record
