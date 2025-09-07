@@ -134,6 +134,9 @@ There were a couple things that I came to realize after acting this out. My orig
 Audio seemed to not work when attempting to prototype, ended up having to substitute computer audio to simulate instead.
 
 # Wizard the Device
+https://youtu.be/RDoGvkEzcJA
+
+https://youtube.com/shorts/OXYqiXmt0zI?feature=share
 
 # Costume the Device
 
@@ -141,3 +144,4 @@ Audio seemed to not work when attempting to prototype, ended up having to substi
 The device structure can remain identical to the one from the original Lab implementation, since the only alteration is to the functionality of the light, not the device structure itself.
 
 # Record
+https://youtube.com/shorts/H3XZTWua3j4?feature=share
