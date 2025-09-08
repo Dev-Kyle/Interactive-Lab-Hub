@@ -55,9 +55,13 @@ Take a little time to set up the wizarding set-up that allows for someone to rem
 
 \*\***Include your first attempts at recording the set-up video here.**\*\*
 
+<<<<<<< HEAD
 https://github.com/user-attachments/assets/37041e08-9c7c-493a-bfe6-323bde343240
 
 Now, hange the goal within the same setting, and update the interaction with the paper prototype.
+=======
+Now, change the goal within the same setting, and update the interaction with the paper prototype. 
+>>>>>>> upstream/Fall2025
 
 \*\***Show the follow-up work here.**\*\*
 
