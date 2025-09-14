@@ -1,5 +1,5 @@
 # Interactive Prototyping: The Clock of Pi
-**NAMES OF COLLABORATORS HERE**
+**Kyle Li**
 
 Does it feel like time is moving strangely during this semester?
 
@@ -8,7 +8,7 @@ For our first Pi project, we will pay homage to the [timekeeping devices of old]
 It is worth spending a little time thinking about how you mark time, and what would be useful in a clock of your own design.
 
 **Please indicate anyone you collaborated with on this Lab here.**
-Be generous in acknowledging their contributions! And also recognizing any other influences (e.g. from YouTube, Github, Twitter) that informed your design. 
+Be generous in acknowledging their contributions! And also recognizing any other influences (e.g. from YouTube, Github, Twitter) that informed your design.
 
 ## Prep
 
@@ -16,7 +16,7 @@ Lab Prep is extra long this week. Make sure to start this early for lab on Thurs
 
 1. ### Set up your Lab 2 Github
 
-Before the start of lab Thursday, ensure you have the latest lab content by updating your forked repository. 
+Before the start of lab Thursday, ensure you have the latest lab content by updating your forked repository.
 
 **📖 [Follow the step-by-step guide for safely updating your fork](pull_updates/README.md)**
 
@@ -35,15 +35,15 @@ Prior to the lab session on Thursday, taken inventory of the kit parts that you 
 
 
 ## Overview
-For this assignment, you are going to 
+For this assignment, you are going to
 
-A) [Connect to your Pi](#part-a)  
+A) [Connect to your Pi](#part-a)
 
-B) [Try out cli_clock.py](#part-b) 
+B) [Try out cli_clock.py](#part-b)
 
 C) [Set up your RGB display](#part-c)
 
-D) [Try out clock_display_demo](#part-d) 
+D) [Try out clock_display_demo](#part-d)
 
 E) [Modify the code to make the display your own](#part-e)
 
@@ -56,7 +56,7 @@ This readme.md page in your own repository should be edited to include the work 
 
 Labs are due on Mondays. Make sure this page is linked to on your main class hub page.
 
-## Part A. 
+## Part A.
 ### Connect to your Pi
 Just like you did in the lab prep, ssh on to your pi. Once you get there, create a Python environment (named venv) by typing the following commands.
 
@@ -65,7 +65,7 @@ ssh pi@<your Pi's IP address>
 ...
 pi@raspberrypi:~ $ python -m venv venv
 pi@raspberrypi:~ $ source venv/bin/activate
-(venv) pi@raspberrypi:~ $ 
+(venv) pi@raspberrypi:~ $
 
 ```
 ### Setup Personal Access Tokens on GitHub
@@ -80,7 +80,7 @@ The support for password authentication of GitHub was removed on August 13, 2021
 Following the steps listed [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) from GitHub to set up a token. Depends on your preference, you can set up and select the scopes, or permissions, you would like to grant the token. This token will act as your GitHub password later when you use the terminal on your Pi to sync files with your lab-hub repo.
 
 
-## Part B. 
+## Part B.
 ### Try out the Command Line Clock
 Clone your own lab-hub repo for this assignment to your Pi and change the directory to Lab 2 folder (remember to replace the following command line with your own GitHub ID):
 
@@ -104,7 +104,7 @@ Install the packages from the requirements.txt and run the example script `cli_c
 
 ```
 (venv) pi@raspberrypi:~/Interactive-Lab-Hub/Lab 2 $ pip install -r requirements.txt
-(venv) pi@raspberrypi:~/Interactive-Lab-Hub/Lab 2 $ python cli_clock.py 
+(venv) pi@raspberrypi:~/Interactive-Lab-Hub/Lab 2 $ python cli_clock.py
 02/24/2021 11:20:49
 ```
 
@@ -112,7 +112,7 @@ The terminal should show the time, you can press `ctrl-c` to exit the script.
 If you are unfamiliar with the Python code in `cli_clock.py`, have a look at [this Python refresher](https://hackernoon.com/intermediate-python-refresher-tutorial-project-ideas-and-tips-i28s320p). If you are still concerned, please reach out to the teaching staff!
 
 
-## Part C. 
+## Part C.
 ### Set up your RGB Display
 We have asked you to equip the [Adafruit MiniPiTFT](https://www.adafruit.com/product/4393) on your Pi in the Lab 2 prep already. Here, we will introduce you to the MiniPiTFT and Python scripts on the Pi with more details.
 
@@ -141,7 +141,7 @@ The display uses a communication protocol called [SPI](https://www.circuitbasics
 
 To show you the IP and Mac address of the Pi to allow connecting remotely we created a service that launches a python script that runs on boot. For the following steps stop the service by typing ``` sudo systemctl stop piscreen.service --now```. Othwerise two scripts will try to use the screen at once. You may start it again by typing ``` sudo systemctl start piscreen.service --now```
 
-We can test it by typing 
+We can test it by typing
 ```
 (venv) pi@raspberrypi:~/Interactive-Lab-Hub/Lab 2 $ python screen_test.py
 ```
@@ -160,7 +160,7 @@ You can look in `image.py` for an example of how to display an image on the scre
 
 
 
-## Part D. 
+## Part D.
 ### Set up the Display Clock Demo
 Work on `screen_clock.py`, try to show the time by filling in the while loop (at the bottom of the script where we noted "TODO" for you). You can use the code in `cli_clock.py` and `stats.py` to figure this out.
 
@@ -180,22 +180,22 @@ Option 2. Another way for you to edit scripts is to use VNC on your laptop to re
 
 Now you should be able to edit python scripts with Thonny on your Pi.
 
-Option 3. A nowadays often preferred method is to use Microsoft [VS code to remote connect to the Pi](https://www.raspberrypi.com/news/coding-on-raspberry-pi-remotely-with-visual-studio-code/). This gives you access to a fullly equipped and responsive code editor with terminal and file browser.  
+Option 3. A nowadays often preferred method is to use Microsoft [VS code to remote connect to the Pi](https://www.raspberrypi.com/news/coding-on-raspberry-pi-remotely-with-visual-studio-code/). This gives you access to a fullly equipped and responsive code editor with terminal and file browser.
 
-Pro Tip: Using tools like [code-server](https://coder.com/docs/code-server/latest) you can even setup a VS Code coding environment hosted on your raspberry pi and code through a web browser on your tablet or smartphone! 
+Pro Tip: Using tools like [code-server](https://coder.com/docs/code-server/latest) you can even setup a VS Code coding environment hosted on your raspberry pi and code through a web browser on your tablet or smartphone!
 
 ## Part E. Now moved to Lab2 Part 2.
 
 ## Part F. Now moved to Lab2 Part 2.
 
-## Part G. 
+## Part G.
 ## Sketch and brainstorm further interactions and features you would like for your clock for Part 2.
 
 
 # Prep for Part 2
 
 1. Pick up remaining parts for kit on Thursday lab class. Check the updated [parts list inventory](partslist.md) and let the TA know if there is any part missing.
-  
+
 
 2. Look at and give feedback on the Part G. for at least 2 other people in the class (and get 2 people to comment on your Part G!)
 
@@ -216,7 +216,7 @@ Please sketch/diagram your clock idea. (Try using a [Verplank digram](http://www
 \*\*\***A copy of your code should be in your Lab 2 Github repo.**\*\*\*
 
 
-## Assignment that was formerly Part F. 
+## Assignment that was formerly Part F.
 ## Make a short video of your modified barebones PiClock
 
 \*\*\***Take a video of your PiClock.**\*\*\*
@@ -238,6 +238,5 @@ Modify the code from last week's lab to make a new visual interface for your new
 
 As always, make sure you document contributions and ideas from others explicitly in your writeup.
 
-You are permitted (but not required) to work in groups and share a turn in; you are expected to make equal contribution on any group work you do, and N people's group project should look like N times the work of a single person's lab. What each person did should be explicitly documented. Make sure the page for the group turn in is linked to your Interactive Lab Hub page. 
-
+You are permitted (but not required) to work in groups and share a turn in; you are expected to make equal contribution on any group work you do, and N people's group project should look like N times the work of a single person's lab. What each person did should be explicitly documented. Make sure the page for the group turn in is linked to your Interactive Lab Hub page.
 
