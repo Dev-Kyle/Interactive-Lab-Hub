@@ -2,7 +2,7 @@ import time
 import subprocess
 import digitalio
 import board
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageSequence
 import adafruit_rgb_display.st7789 as st7789
 
 # Configuration for CS and DC pins (these are FeatherWing defaults on M0/M4):
@@ -60,12 +60,40 @@ backlight = digitalio.DigitalInOut(board.D22)
 backlight.switch_to_output()
 backlight.value = True
 
-while True:
-    # Draw a black filled box to clear the image.
-    draw.rectangle((0, 0, width, height), outline=0, fill=400)
+gif = Image.open('drip.gif')
 
-    #TODO: Lab 2 part D work should be filled in here. You should be able to look in cli_clock.py and stats.py
-    # Display image.
-    draw.text((x, top), time.strftime("%m/%d/%Y %H:%M:%S"), font=font, fill="#FFFFFF")
-    disp.image(image, rotation)
-    time.sleep(1)
+# Create a list to hold the processed frames
+frames = []
+# Loop through each frame of the GIF
+for frame in ImageSequence.Iterator(gif):
+    # Convert the frame to the '1' format (1-bit black and white)
+    # This is necessary for monochrome OLED displays
+    processed_frame = frame.convert('1')
+
+    # Resize the frame to fit the display
+    processed_frame = processed_frame.resize((width, height))
+
+    frames.append(processed_frame)
+
+# Get the number of frames to loop through
+num_frames = len(frames)
+frame_index = 0
+
+## --- Step 2: Modify Your Main Loop to Animate ---
+print("Playing animation...")
+while True:
+    # Get the current frame from your list
+    current_frame = frames[frame_index]
+
+    # Display the frame on the screen
+    disp.image(current_frame)
+    disp.display()
+
+    # Move to the next frame
+    frame_index += 1
+    # If we've reached the end of the GIF, loop back to the beginning
+    if frame_index >= num_frames:
+        frame_index = 0
+
+    # Control the animation speed (e.g., 0.1 seconds per frame)
+    time.sleep(0.1)
