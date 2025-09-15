@@ -69,14 +69,44 @@ for frame in ImageSequence.Iterator(gif):
 num_frames = len(frames)
 frame_index = 0
 
-time.sleep(0.1)
-while True:
-    current_frame = frames[frame_index]
 
-    disp.image(current_frame, rotation)
+buttonA = digitalio.DigitalInOut(board.D23)    # GPIO23 (PIN 16)
+buttonB = digitalio.DigitalInOut(board.D24)    # GPIO24 (PIN 18)
+# Use internal pull-ups; buttons then read LOW when pressed.
+buttonA.switch_to_input(pull=digitalio.Pull.UP)
+buttonB.switch_to_input(pull=digitalio.Pull.UP)
+speed = 0.2
+cups = 0
+textFont = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 25)
+
+while True:
+
+    a_pressed = (buttonA.value == False)
+    b_pressed = (buttonB.value == False)
+
+    if a_pressed and b_pressed:
+        speed = 0.2
+    elif a_pressed:
+        if speed > 0.1:
+            speed -= 0.05
+    elif b_pressed:
+        if speed < 1:
+            speed += 0.05
+
+    frame_to_display = frames[frame_index].copy()
+
+    draw = ImageDraw.Draw(frame_to_display)
+
+    text = str(cups) + (" cup" if cups == 1 else " cups")
+    x = 30
+    y = height / 2 - 20
+    draw.text((x, y), text, fill=(0, 0, 0), font=textFont)
+
+    disp.image(frame_to_display, rotation)
 
     frame_index += 1
     if frame_index >= num_frames:
+        cups += 1
         frame_index = 0
 
-    time.sleep(0.2)
+    time.sleep(speed)
