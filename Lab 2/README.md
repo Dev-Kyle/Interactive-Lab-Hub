@@ -190,6 +190,7 @@ Pro Tip: Using tools like [code-server](https://coder.com/docs/code-server/lates
 
 ## Part G.
 ## Sketch and brainstorm further interactions and features you would like for your clock for Part 2.
+<img width="585" height="643" alt="image" src="https://github.com/user-attachments/assets/12cf6b63-c2ba-4a50-8ac3-f0ed669e2656" />
 
 
 # Prep for Part 2
@@ -198,6 +199,9 @@ Pro Tip: Using tools like [code-server](https://coder.com/docs/code-server/lates
 
 
 2. Look at and give feedback on the Part G. for at least 2 other people in the class (and get 2 people to comment on your Part G!)
+
+Feedback 1: Interesting representation of time, maybe have a side showing of actual time passed
+Feedback 2: Could have buttons that speed up or slow down the flow of time (water drop speed)
 
 # Lab 2 Part 2
 
