@@ -138,7 +138,6 @@ source ../.venv/bin/activate
 ```
 
 Then test the Whisper models:
-```
 python whisper_try.py
 ```
 and
@@ -177,7 +176,6 @@ pip install -r ollama_requirements.txt
 #### Ready-to-Use Scripts
 
 We've created three Ollama integration scripts for different use cases:
-
 **1. Basic Demo** - Learn how Ollama works:
 ```bash
 python3 ollama_demo.py
@@ -294,6 +292,18 @@ The system should:
 https://youtube.com/shorts/8JGa3FmGa5I
 https://youtube.com/shorts/8JGa3FmGa5I
 
+
+<details>
+  <summary><strong>Submission Cleanup Reminder (Click to Expand)</strong></summary>
+  
+  **Before submitting your README.md:**
+  - This readme.md file has a lot of extra text for guidance.
+  - Remove all instructional text and example prompts from this file.
+  - You may either delete these sections or use the toggle/hide feature in VS Code to collapse them for a cleaner look.
+  - Your final submission should be neat, focused on your own work, and easy to read for grading.
+  
+  This helps ensure your README.md is clear professional and uniquely yours!
+</details>
 
 <details>
   <summary><strong>Submission Cleanup Reminder (Click to Expand)</strong></summary>
