@@ -138,6 +138,7 @@ source ../.venv/bin/activate
 ```
 
 Then test the Whisper models:
+```
 python whisper_try.py
 ```
 and
@@ -176,6 +177,7 @@ pip install -r ollama_requirements.txt
 #### Ready-to-Use Scripts
 
 We've created three Ollama integration scripts for different use cases:
+
 **1. Basic Demo** - Learn how Ollama works:
 ```bash
 python3 ollama_demo.py
