@@ -203,7 +203,27 @@ Pro Tip: Using tools like [code-server](https://coder.com/docs/code-server/lates
 Feedback 1: Interesting representation of time, maybe have a side showing of actual time passed
 Feedback 2: Could have buttons that speed up or slow down the flow of time (water drop speed)
 
+<<<<<<< HEAD
 # Lab 2 Part 2.
+=======
+## Assignment that was formerly Lab 2 Part E.
+### Modify the barebones clock to make it your own
+
+Does time have to be linear?  How do you measure a year? [In daylights? In midnights? In cups of coffee?](https://www.youtube.com/watch?v=wsj15wPpjLY)
+
+Can you make time interactive? You can look in `screen_test.py` for examples for how to use the buttons.
+
+Please sketch/diagram your clock idea. (Try using a [Verplank diagram](https://ccrma.stanford.edu/courses/250a-fall-2004/IDSketchbok.pdf))!
+
+**We strongly discourage and will reject the results of literal digital or analog clock display.**
+
+
+\*\*\***A copy of your code should be in your Lab 2 Github repo.**\*\*\*
+
+
+## Assignment that was formerly Part F. 
+## Make a short video of your modified barebones PiClock
+>>>>>>> c3ec493 (Update README.md)
 
 \*\*\***Take a video of your PiClock.**\*\*\*
 https://youtube.com/shorts/x4RCyWGY_aU
