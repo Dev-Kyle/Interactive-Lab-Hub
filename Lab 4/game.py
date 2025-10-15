@@ -1,56 +1,86 @@
+# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
+import digitalio
+import board
+from PIL import Image
 import pygame
 import random
-import board
 import busio
 import adafruit_mpr121
+import adafruit_rgb_display.st7789 as st7789
 
+# --- Controller Hardware Setup ---
 i2c = busio.I2C(board.SCL, board.SDA)
 mpr121 = adafruit_mpr121.MPR121(i2c)
 JUMP_PIN = 0
 DUCK_PIN = 1
 
-# 2. Pygame Setup
-pygame.init()
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 400
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Pi Dino Game (Keyboard Test)")
+# --- Display Hardware Setup ---
+cs_pin = digitalio.DigitalInOut(board.D5)
+dc_pin = digitalio.DigitalInOut(board.D25)
+reset_pin = digitalio.DigitalInOut(board.D24)
+BAUDRATE = 24000000
+spi = board.SPI()
 
-# Colors and Fonts
+disp = st7789.ST7789(
+    spi,
+    cs=cs_pin,
+    dc=dc_pin,
+    rst=reset_pin,
+    baudrate=BAUDRATE,
+    width=135,
+    height=240,
+    x_offset=53,
+    y_offset=40,
+)
+
+# Set display rotation to landscape and turn on backlight
+disp.rotation = 90
+backlight = digitalio.DigitalInOut(board.D22)
+backlight.switch_to_output()
+backlight.value = True
+
+# --- Pygame Setup ---
+# *** THIS IS THE FIX ***
+# Directly use the display's width and height after the rotation has been set.
+# The library automatically swaps them for us.
+SCREEN_WIDTH = disp.width
+SCREEN_HEIGHT = disp.height
+
+pygame.init()
+# This screen surface is created in memory and will be sent to the display
+screen = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+# Colors and Fonts (adjusted for smaller screen)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-font = pygame.font.Font(None, 36)
-game_over_font = pygame.font.Font(None, 72)
+font = pygame.font.Font(None, 24)
+game_over_font = pygame.font.Font(None, 40)
 
 # Game Variables
 clock = pygame.time.Clock()
-FPS = 60
-GROUND_LEVEL = SCREEN_HEIGHT - 50
+FPS = 30
+GROUND_LEVEL = SCREEN_HEIGHT - 25
 
-# 3. Player Class
+# --- Player Class (adjusted for smaller screen) ---
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.normal_height = 50
-        self.duck_height = 25
-        self.image = pygame.Surface([40, self.normal_height])
+        self.normal_height = 25
+        self.duck_height = 12
+        self.image = pygame.Surface([20, self.normal_height])
         self.image.fill(BLACK)
-        self.rect = self.image.get_rect()
-        self.rect.bottom = GROUND_LEVEL
-        self.rect.left = 50
-
+        self.rect = self.image.get_rect(bottomleft=(20, GROUND_LEVEL))
         self.velocity_y = 0
-        self.gravity = 1
+        self.gravity = 0.8
         self.is_jumping = False
         self.is_ducking = False
 
     def update(self):
-        # Apply gravity
         if self.is_jumping:
             self.velocity_y += self.gravity
             self.rect.y += self.velocity_y
-
-        # Check if landed
         if self.rect.bottom >= GROUND_LEVEL:
             self.rect.bottom = GROUND_LEVEL
             self.is_jumping = False
@@ -59,57 +89,50 @@ class Player(pygame.sprite.Sprite):
     def jump(self):
         if not self.is_jumping and not self.is_ducking:
             self.is_jumping = True
-            self.velocity_y = -20
+            self.velocity_y = -10
 
     def duck(self, is_pressed):
         if self.is_jumping: return
-
         if is_pressed and not self.is_ducking:
             self.is_ducking = True
-            self.image = pygame.Surface([40, self.duck_height])
+            self.image = pygame.Surface([20, self.duck_height])
             self.image.fill(BLACK)
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
         elif not is_pressed and self.is_ducking:
             self.is_ducking = False
-            self.image = pygame.Surface([40, self.normal_height])
+            self.image = pygame.Surface([20, self.normal_height])
             self.image.fill(BLACK)
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
 
-# 4. Obstacle Class
+# --- Obstacle Class (adjusted for smaller screen) ---
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        # Randomly choose obstacle type
-        if random.choice([True, False]):
-            height = 50 # A cactus to jump over
-        else:
-            height = 40 # A bird to duck under
-
-        self.image = pygame.Surface([20, height])
+        if random.choice([True, False]): # Cactus
+            self.image = pygame.Surface([10, 25])
+            self.rect = self.image.get_rect(bottomleft=(SCREEN_WIDTH, GROUND_LEVEL))
+        else: # Bird
+            self.image = pygame.Surface([15, 15])
+            self.rect = self.image.get_rect(bottomleft=(SCREEN_WIDTH, GROUND_LEVEL - 20))
         self.image.fill(BLACK)
-        self.rect = self.image.get_rect()
-        self.rect.bottom = GROUND_LEVEL if height == 50 else GROUND_LEVEL - 30
-        self.rect.left = SCREEN_WIDTH
 
     def update(self):
-        self.rect.x -= 8 # Move left
+        self.rect.x -= 5
         if self.rect.right < 0:
             self.kill()
 
-# 5. Game Loop
+# --- Game Loop Function ---
 def game_loop():
     player = Player()
     obstacles = pygame.sprite.Group()
     all_sprites = pygame.sprite.Group(player)
-
     running = True
     game_over = False
     score = 0
     obstacle_timer = pygame.USEREVENT + 1
-    pygame.time.set_timer(obstacle_timer, 1500)
+    pygame.time.set_timer(obstacle_timer, 2000)
 
     while running:
-        # --- Event Handling ---
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -119,32 +142,34 @@ def game_loop():
                 all_sprites.add(new_obstacle)
 
         if not game_over:
-             if mpr121[JUMP_PIN].value:
-                 player.jump()
-             player.duck(mpr121[DUCK_PIN].value)
-
-             all_sprites.update()
-             score += 1
-
-             if pygame.sprite.spritecollide(player, obstacles, False):
-                 game_over = True
+            if mpr121[JUMP_PIN].value:
+                player.jump()
+            player.duck(mpr121[DUCK_PIN].value)
+            all_sprites.update()
+            score += 1
+            if pygame.sprite.spritecollide(player, obstacles, False):
+                game_over = True
 
         screen.fill(WHITE)
-        pygame.draw.line(screen, BLACK, (0, GROUND_LEVEL), (SCREEN_WIDTH, GROUND_LEVEL), 2)
+        pygame.draw.line(screen, BLACK, (0, GROUND_LEVEL), (SCREEN_WIDTH, GROUND_LEVEL), 1)
         all_sprites.draw(screen)
-
         score_text = font.render(f"Score: {score // 10}", True, BLACK)
-        screen.blit(score_text, (10, 10))
+        screen.blit(score_text, (5, 5))
 
         if game_over:
             over_text = game_over_font.render("GAME OVER", True, BLACK)
             text_rect = over_text.get_rect(center=(SCREEN_WIDTH/2, SCREEN_HEIGHT/2))
             screen.blit(over_text, text_rect)
 
-        pygame.display.flip()
+        pixel_data = pygame.image.tostring(screen, "RGB")
+        image = Image.frombytes("RGB", screen.get_size(), pixel_data)
+        disp.image(image)
+
         clock.tick(FPS)
 
     pygame.quit()
 
 if __name__ == "__main__":
     game_loop()
+
+
