@@ -167,6 +167,7 @@ The design draws inspiration from classic 90s handheld gaming consoles, emphasiz
 
 - **Demo Code & Video:**  
   - *Code:* [geometry_game.py](https://github.com/ji227/Jesse-Iriah-s-Lab-Hub/blob/Fall2025/Lab%204/Deliverables/geometry_game.py)
+    (assisted code generation from Gemini)
   - *Videos:*
  	 - Game 1 (Geometry Runner) Demo: https://drive.google.com/drive/folders/1k5EjLj52QXkYCU0cCGVUmvABz0LI8WAS
  	 - Game 2 (Maze) Demo: https://drive.google.com/drive/folders/1k5EjLj52QXkYCU0cCGVUmvABz0LI8WAS
