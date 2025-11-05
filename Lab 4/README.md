@@ -1,10 +1,13 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Ph-UI!!!
 
 **Collaborators:**  
 Jesse Iriah
 Angela Bi
 =======
+=======
+>>>>>>> upstream/Fall2025
 
 # Ph-UI!!!
 
@@ -58,11 +61,15 @@ Angela Bi
 	- Photos/videos of your final prototype
 	- Written summary: what it looks like, works like, acts like
 	- Reflection on what you learned and next steps
+<<<<<<< HEAD
 >>>>>>> a3e5122 (Add Lab 4)
+=======
+>>>>>>> upstream/Fall2025
 
 ---
 
 ## Lab Overview
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 This project explores physical user interfaces on the Raspberry Pi, focusing on sensor integration and prototyping new device forms. The goal is to use capacitive, light/proximity, gesture, rotary encoder, joystick, and distance sensors—then design the physical interaction and display for a new device.
@@ -297,6 +304,8 @@ The final prototype required the use of the Waveshare 2.23-inch OLED Hat as the 
 ---
 
 =======
+=======
+>>>>>>> upstream/Fall2025
 **NAMES OF COLLABORATORS HERE**
 
 
@@ -738,4 +747,7 @@ Document all the prototypes and iterations you have designed and worked on! Agai
 * "Works like": shows what the device can do
 * "Acts like": shows how a person would interact with the device
 
+<<<<<<< HEAD
 >>>>>>> a3e5122 (Add Lab 4)
+=======
+>>>>>>> upstream/Fall2025
