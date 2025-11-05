@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bird Guessing Game</title>
+    <title>Student Guessing Game</title> <!-- CHANGED -->
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Load Socket.IO client -->
@@ -23,13 +23,14 @@
         .screen.active {
             display: flex; /* Shown when active */
         }
-        .bird-grid {
+        /* CHANGED */
+        .student-grid {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             align-content: center;
             gap: 1rem;
-            font-size: 3rem; /* Bird size */
+            font-size: 3rem; /* Student size */
             line-height: 1;
             user-select: none;
             padding: 1rem;
@@ -41,6 +42,7 @@
             border-radius: 9999px; /* full */
             font-family: monospace;
             font-size: 0.875rem;
+            transition: all 0.2s ease-in-out; /* Added transition */
         }
         .guess-item {
             transition: all 0.3s ease;
@@ -77,11 +79,12 @@
             <!-- GAME Screen -->
             <div id="game-screen" class="screen flex-col items-center justify-center">
                 <h2 class="text-6xl font-extrabold mb-8">
-                    How many birds?
+                    How many students? <!-- CHANGED -->
                 </h2>
                 <div id="countdown-timer" class="text-9xl font-mono font-bold text-yellow-400 mb-8">10</div>
-                <div id="bird-container" class="w-full h-96 max-h-[50vh] bg-gray-800 rounded-lg shadow-inner overflow-y-auto bird-grid">
-                    <!-- Birds will be injected here -->
+                <!-- CHANGED id and class -->
+                <div id="student-container" class="w-full h-96 max-h-[50vh] bg-gray-800 rounded-lg shadow-inner overflow-y-auto student-grid">
+                    <!-- Students will be injected here -->
                 </div>
             </div>
 
@@ -120,7 +123,7 @@
             game: document.getElementById('game-screen'),
             results: document.getElementById('results-screen')
         };
-        const birdContainer = document.getElementById('bird-container');
+        const studentContainer = document.getElementById('student-container'); // CHANGED
         const countdownTimer = document.getElementById('countdown-timer');
         const correctAnsEl = document.getElementById('correct-answer');
         const guessesList = document.getElementById('guesses-list');
@@ -144,7 +147,7 @@
             players.forEach(mac => {
                 const tag = document.createElement('div');
                 tag.className = 'player-tag';
-                tag.textContent = mac;
+                tag.textContent = mac; // Default text is just MAC
                 tag.id = `player-tag-${mac.replace(/:/g, '-')}`;
                 playerList.appendChild(tag);
             });
@@ -186,6 +189,17 @@
             updatePlayerList();
         });
         
+        // --- NEW: Handle live guess updates ---
+        socket.on('live_guess', (data) => {
+            console.log('Live guess:', data);
+            const tag = document.getElementById(`player-tag-${data.mac.replace(/:/g, '-')}`);
+            if (tag) {
+                // Update player tag to show their guess
+                tag.textContent = `${data.mac} (${data.guess})`;
+                tag.style.backgroundColor = '#059669'; // emerald-700
+            }
+        });
+        
         socket.on('game_state', (data) => {
             console.log('Syncing game state:', data.state);
             if(data.state === 'IDLE') {
@@ -194,7 +208,7 @@
                 // Can't fully sync a game in progress, just show it's happening
                 showScreen('game');
                 countdownTimer.textContent = '...';
-                birdContainer.innerHTML = '<h2>Game in progress...</h2>';
+                studentContainer.innerHTML = '<h2>Game in progress...</h2>'; // CHANGED
             } else if (data.state === 'RESULTS') {
                 showScreen('results');
                 correctAnsEl.textContent = data.answer;
@@ -205,12 +219,15 @@
             console.log('New round started!', data);
             showScreen('game');
             
-            // Populate birds
-            birdContainer.innerHTML = '';
-            for (let i = 0; i < data.bird_count; i++) {
-                const bird = document.createElement('span');
-                bird.textContent = '🐦';
-                birdContainer.appendChild(bird);
+            // --- Reset player tags ---
+            updatePlayerList();
+
+            // Populate students // CHANGED
+            studentContainer.innerHTML = '';
+            for (let i = 0; i < data.student_count; i++) { // student_count is still the var name from the server
+                const student = document.createElement('span');
+                student.textContent = '🧑‍🎓'; // CHANGED
+                studentContainer.appendChild(student); // CHANGED
             }
             
             // Start countdown
