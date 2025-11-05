@@ -6,32 +6,23 @@ Bridged Architecture:
 """
 
 # --- EVENTLET PATCHING ---
-try:
-    import eventlet
-    eventlet.monkey_patch()
-    print("Running in eventlet async_mode.")
-except ImportError:
-    eventlet = None
-    print("Running in threading async_mode (eventlet not found).")
+# This MUST be at the very top, before any other imports
+import eventlet
+eventlet.monkey_patch()
 # -------------------------
 
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit
-import paho.mqtt.client as mqtt
 import json
-from collections import OrderedDict
-from datetime import datetime
+import paho.mqtt.client as mqtt
 import random
 import time
+import os
 
 # --- Flask & Socket.IO Setup ---
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'guess-the-students-2025'
-
-if eventlet:
-    socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
-else:
-    socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+app.config['SECRET_KEY'] = 'idd-student-game-2025'
+socketio = SocketIO(app, async_mode='eventlet')
 
 # --- MQTT Configuration (from your example) ---
 MQTT_BROKER = 'farlab.infosci.cornell.edu'
@@ -51,18 +42,21 @@ MQTT_TOPIC_ROUND_IDLE = f'{MQTT_TOPIC_PREFIX}/broadcast/round_idle'
 # --- Flask Routes ---
 @app.route('/')
 def index():
-    """Serve the main game screen UI"""
+    """Serve the main game screen."""
     return render_template('index.html')
 
 # --- Global Game State ---
-# Store player data: {mac_address: {'guess': int}}
-# We no longer need 'sid' since Pis are identified by MAC via MQTT
-players = OrderedDict()
-
-GAME_STATE = 'IDLE'  # States: IDLE, GUESSING, RESULTS
+# Use a thread-safe dictionary for player data
+# { 'mac_address': {'guess': int} }
+players = {}
+GAME_STATE = 'IDLE'     # IDLE, GUESSING, RESULTS
 CORRECT_ANSWER = 0
-GAME_COUNTDOWN = 10
-RESULTS_DURATION = 8
+game_loop_task = None
+mqtt_client = None
+
+# Game settings
+COUNTDOWN_TIME = 10
+RESULTS_TIME = 10
 SUBMIT_GRACE_PERIOD = 3
 
 
@@ -77,14 +71,12 @@ def handle_pi_registration(mac):
         print(f'MQTT: Pi registered: {mac}')
         players[mac] = {'guess': None}
         
-        # --- FIX: Yield to eventlet hub before emitting from MQTT thread ---
-        socketio.sleep(0) 
-        
-        # Notify WEB UI (via Socket.IO) of the new player
-        socketio.emit('player_joined', {
-            'mac': mac,
-            'count': len(players)
-        })
+        # --- FIX: Use eventlet.spawn to emit from MQTT thread ---
+        eventlet.spawn(
+            socketio.emit,
+            'player_joined',
+            {'mac': mac, 'count': len(players)}
+        )
     else:
         print(f'MQTT: Pi re-registered: {mac}')
 
@@ -98,9 +90,12 @@ def handle_pi_guess(mac, guess):
                 players[mac]['guess'] = int_guess
                 print(f'MQTT: Guess received from {mac}: {int_guess}')
                 
-                # --- NEW FEATURE: Notify web UI of the live guess ---
-                socketio.sleep(0) # Yield to eventlet hub
-                socketio.emit('live_guess', {'mac': mac, 'guess': int_guess})
+                # --- FIX: Use eventlet.spawn to emit live guess from MQTT thread ---
+                eventlet.spawn(
+                    socketio.emit,
+                    'live_guess',
+                    {'mac': mac, 'guess': int_guess}
+                )
                 
             except ValueError:
                 print(f'MQTT: Invalid guess from {mac}: {guess}')
@@ -112,182 +107,187 @@ def handle_pi_guess(mac, guess):
 def on_mqtt_connect(client, userdata, flags, rc):
     """Callback when the server connects to the MQTT broker."""
     if rc == 0:
-        print(f"[OK] Connected to MQTT broker: {MQTT_BROKER}")
-        # Subscribe to topics where Pis will send data
+        print(f"[OK] MQTT Bridge connected to {MQTT_BROKER}")
+        # Subscribe to topics FROM the Pi clients
         client.subscribe(MQTT_TOPIC_REGISTER)
         client.subscribe(MQTT_TOPIC_SUBMIT_GUESS)
-        print(f"Subscribed to: {MQTT_TOPIC_REGISTER}")
-        print(f"Subscribed to: {MQTT_TOPIC_SUBMIT_GUESS}")
+        print(f"MQTT: Subscribed to {MQTT_TOPIC_REGISTER}")
+        print(f"MQTT: Subscribed to {MQTT_TOPIC_SUBMIT_GUESS}")
     else:
         print(f"[ERROR] MQTT Connection failed with code {rc}")
 
 def on_mqtt_message(client, userdata, msg):
-    """Callback for ANY message received from the MQTT broker."""
+    """Callback for all messages received from the broker."""
     try:
         payload = msg.payload.decode('utf-8')
         data = json.loads(payload)
+        mac = data.get('mac')
         
         print(f"MQTT RX on {msg.topic}: {payload}")
 
         if msg.topic == MQTT_TOPIC_REGISTER:
-            handle_pi_registration(data.get('mac'))
+            handle_pi_registration(mac)
             
         elif msg.topic == MQTT_TOPIC_SUBMIT_GUESS:
-            handle_pi_guess(data.get('mac'), data.get('guess'))
+            handle_pi_guess(mac, data.get('guess'))
             
     except Exception as e:
-        print(f"Error processing MQTT message on topic {msg.topic}: {e}")
+        print(f"Error processing MQTT message: {e}")
 
 # --- Background Game Loop ---
 def game_loop(mqtt_client):
-    """
-    Manages the game state transitions.
-    Now publishes game state to MQTT instead of Socket.IO for Pis.
-    """
-    global GAME_STATE, CORRECT_ANSWER
-    
+    """Main game loop, runs in a background green-thread."""
+    global GAME_STATE, CORRECT_ANSWER, players
+
     while True:
-        if GAME_STATE == 'IDLE':
-            socketio.sleep(1)
+        # --- IDLE State ---
+        # Wait until a game is started (via Socket.IO)
+        while GAME_STATE == 'IDLE':
+            socketio.sleep(0.1)
+        
+        # --- GUESSING State ---
+        print("\n" + "="*20 + " NEW ROUND " + "="*20)
+        # Reset player guesses for the new round
+        for mac in players:
+            players[mac]['guess'] = None
             
-        elif GAME_STATE == 'GUESSING':
-            # --- START NEW ROUND ---
-            for mac in players:
-                players[mac]['guess'] = None
-            
-            CORRECT_ANSWER = random.randint(10, 30)
-            print("\n--- NEW ROUND ---")
-            print(f"Correct answer is: {CORRECT_ANSWER}")
-            
-            # --- MQTT PUBLISH ---
-            # Notify Pis (via MQTT) of the new round
-            payload = json.dumps({
-                'student_count': CORRECT_ANSWER,
-                'countdown': GAME_COUNTDOWN
-            })
-            mqtt_client.publish(MQTT_TOPIC_NEW_ROUND, payload)
-            print(f"MQTT TX to {MQTT_TOPIC_NEW_ROUND}: {payload}")
-            
-            # Notify Web UI (via Socket.IO)
-            socketio.emit('new_round', {
-                'student_count': CORRECT_ANSWER,
-                'countdown': GAME_COUNTDOWN
-            })
-            
-            socketio.sleep(GAME_COUNTDOWN)
-            
-            # --- TIMES UP, MOVE TO RESULTS ---
-            print("Time's up!")
-            GAME_STATE = 'RESULTS'
-            
-            # --- MQTT PUBLISH ---
-            # Tell Pis (via MQTT) to submit their final guess
-            mqtt_client.publish(MQTT_TOPIC_TIMES_UP, "{}")
-            print(f"MQTT TX to {MQTT_TOPIC_TIMES_UP}: {{}}")
-            
-            socketio.sleep(SUBMIT_GRACE_PERIOD)
-            
-        elif GAME_STATE == 'RESULTS':
-            # --- CALCULATE WINNERS ---
-            all_guesses = []
-            min_diff = float('inf')
-            winners = []
-            
-            for mac, data in players.items():
-                guess = data['guess']
-                all_guesses.append({'mac': mac, 'guess': guess})
-                
-                if guess is not None:
-                    diff = abs(guess - CORRECT_ANSWER)
-                    if diff < min_diff:
-                        min_diff = diff
-                        winners = [mac]
-                    elif diff == min_diff:
-                        winners.append(mac)
-            
-            print(f"Winners: {winners} (Difference: {min_diff})")
-            
-            # --- SOCKET.IO EMIT ---
-            # Broadcast results ONLY to web UI
-            socketio.emit('show_results', {
-                'correct_answer': CORRECT_ANSWER,
-                'guesses': all_guesses,
-                'winners': winners
-            })
-            
-            socketio.sleep(RESULTS_DURATION)
-            
-            # --- BACK TO IDLE ---
-            print("Round over, returning to IDLE.")
-            GAME_STATE = 'IDLE'
+        CORRECT_ANSWER = random.randint(5, 20)
+        print(f"Correct answer is: {CORRECT_ANSWER}")
+        
+        # --- MQTT PUBLISH ---
+        # Tell Pis (via MQTT) about the new round
+        mqtt_client.publish(MQTT_TOPIC_NEW_ROUND, json.dumps({
+            'student_count': CORRECT_ANSWER, # Use 'student_count' for compatibility
+            'countdown': COUNTDOWN_TIME
+        }))
+        
+        # --- SOCKET.IO EMIT ---
+        # Tell Web UI (via Socket.IO) about the new round
+        socketio.emit('new_round', {
+            'student_count': CORRECT_ANSWER, # Use 'student_count' for compatibility
+            'countdown': COUNTDOWN_TIME
+        })
+        
+        # Run countdown
+        socketio.sleep(COUNTDOWN_TIME)
+        
+        
+        # --- RESULTS State ---
+        GAME_STATE = 'RESULTS'
+        print("Time's up! Calculating results...")
 
-            # --- MQTT PUBLISH ---
-            # Tell Pis (via MQTT) to go idle
-            mqtt_client.publish(MQTT_TOPIC_ROUND_IDLE, "{}")
-            print(f"MQTT TX to {MQTT_TOPIC_ROUND_IDLE}: {{}}")
+        # --- MQTT PUBLISH ---
+        # Tell Pis (via MQTT) that time is up
+        mqtt_client.publish(MQTT_TOPIC_TIMES_UP)
+        
+        # Give Pis a grace period to send their final guess
+        socketio.sleep(SUBMIT_GRACE_PERIOD)
+        
+        # Calculate winners
+        guesses = []
+        winners = []
+        min_diff = float('inf')
+        
+        for mac, data in players.items():
+            guess = data['guess']
+            guesses.append({'mac': mac, 'guess': guess})
+            
+            if guess is not None:
+                diff = abs(guess - CORRECT_ANSWER)
+                if diff < min_diff:
+                    min_diff = diff
+                    winners = [mac] # New best, clear old list
+                elif diff == min_diff:
+                    winners.append(mac) # Tied for best
+        
+        print(f"Winners: {winners} (diff={min_diff})")
 
-            # --- SOCKET.IO EMIT ---
-            # Tell Web UI (via Socket.IO) to go idle
-            socketio.emit('round_idle')
+        # --- SOCKET.IO EMIT ---
+        # Tell Web UI (via Socket.IO) the results
+        socketio.emit('show_results', {
+            'correct_answer': CORRECT_ANSWER,
+            'guesses': guesses,
+            'winners': winners
+        })
+        
+        # Display results for a few seconds
+        socketio.sleep(RESULTS_TIME)
+        
+        # --- Back to IDLE ---
+        GAME_STATE = 'IDLE'
+        print("Returning to IDLE state.")
+        
+        # --- MQTT PUBLISH ---
+        # Tell Pis (via MQTT) to go idle
+        mqtt_client.publish(MQTT_TOPIC_ROUND_IDLE)
+        
+        # --- SOCKET.IO EMIT ---
+        # Tell Web UI (via Socket.IO) to go idle
+        socketio.emit('round_idle')
 
 # --- SocketIO Handlers (for Web UI only) ---
 
 @socketio.on('connect')
-def handle_web_connect():
-    """A new web UI client connected."""
-    print(f'Web UI Client connected: {request.sid}')
-    # Send current state
+def handle_connect():
+    """A web client connected."""
+    print(f'Web UI client connected: {request.sid}')
+    # Send current game state to this client
     socketio.emit('game_state', {
         'state': GAME_STATE,
         'answer': CORRECT_ANSWER
     }, to=request.sid)
+    
     # Send current players
     socketio.emit('current_players', {
         'players': list(players.keys())
     }, to=request.sid)
 
 @socketio.on('disconnect')
-def handle_web_disconnect():
-    """A web UI client disconnected."""
-    print(f'Web UI Client disconnected: {request.sid}')
-    # We don't remove players here, as Pis are persistent
+def handle_disconnect():
+    """A web client disconnected."""
+    print(f'Web UI client disconnected: {request.sid}')
 
 @socketio.on('start_game')
 def handle_start_game():
-    """Triggered by the 'Start Game' button on the web UI."""
-    global GAME_STATE
+    """Web UI user clicked 'Start Game'."""
+    global GAME_STATE  # <-- THIS IS THE FIX
     if GAME_STATE == 'IDLE':
-        print("Start Game signal received! -> Moving to GUESSING")
-        GAME_STATE = 'GUESSING'
+        print("\n>>> 'Start Game' signal received. Starting new round...")
+        GAME_STATE = 'GUESSING' # This un-blocks the game_loop
     else:
-        print("Start Game signal ignored (game already in progress)")
+        print("Warning: 'Start Game' signal received while game not idle.")
 
-
+# --- Main ---
 if __name__ == '__main__':
     # --- Setup MQTT Client ---
-    mqtt_client = mqtt.Client(f"student-game-server-{random.randint(100,999)}")
+    mqtt_client = mqtt.Client("student-game-server")
     mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
     mqtt_client.on_connect = on_mqtt_connect
     mqtt_client.on_message = on_mqtt_message
     
     try:
         mqtt_client.connect(MQTT_BROKER, port=MQTT_PORT, keepalive=60)
-        mqtt_client.loop_start()  # Starts a background thread
+        mqtt_client.loop_start() # Start MQTT client in background thread
     except Exception as e:
         print(f"CRITICAL: Could not connect to MQTT broker: {e}")
-        print("Please check MQTT settings and network connection.")
+        print("Server cannot start without MQTT.")
         exit(1)
-    
+
     # --- Start Game Loop ---
-    # Pass the mqtt_client instance to the game loop
-    socketio.start_background_task(game_loop, mqtt_client)
+    # Start the game loop in a background green-thread
+    game_loop_task = socketio.start_background_task(game_loop, mqtt_client)
     
-    # --- Start Flask Server ---
+    # --- Start Server ---
     print("=" * 60)
-    print("  Distributed Student Guessing Game Server (MQTT Bridged)")
+    print("  Distributed Student Guessing Game Server (MQTT)")
     print("=" * 60)
-    print(f"  MQTT Broker: {MQTT_BROKER}")
-    print(f"  Web UI Screen: http://0.0.0.0:5001")
+    # Use port 5001 to avoid conflicts on macOS
+    print(f"Main Screen: http://0.0.0.0:5001") 
     print("=" * 60)
+    print("Game loop started in background.")
+    print("Waiting for connections and 'Start Game' signal...")
     
+    # Run the Flask-SocketIO server
+    # We use '0.0.0.0' to make it accessible on the local network
+    # debug=False is important for eventlet/threading to work properly
     socketio.run(app, host='0.0.0.0', port=5001, debug=False)
