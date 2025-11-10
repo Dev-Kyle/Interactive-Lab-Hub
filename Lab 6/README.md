@@ -71,7 +71,6 @@ The distributed guessing game enables multiple players to use Raspberry Pis to g
 ### Hardware Setup
 - **Sensor Configuration:** The **Adafruit APDS-9960 RGB Sensor** was used to capture color input.
 - **Wiring:** The sensor was connected directly to the Raspberry Pi's I2C port using a **Qwiic connector cable**. The connection was verified using the diagnostic tool `sudo i2cdetect -y 1`.
-- **Pi Setup:** [Photo of Pi Setup: Deliverables/pi_with_sensor.jpg]  
 
 ### Software Configuration
 Due to an **OSError: [Errno 48] Address already in use** conflict on port 5000 (claimed by a macOS system process), the server's running port was manually changed to **5002** directly within the `app.py` script.
@@ -98,10 +97,8 @@ Testing confirmed successful data flow:
 - **Pi Sensor → MQTT Broker → Server → Web Grid (Port 5002)**
   
 - **Grid Display:** The collaborative grid displayed pixels correctly on the custom port.  
-![Grid Display](/Deliverables/grid_screenshot.png)
-
-- **Controller Interface:** The manual control interface was accessible and functional.  
-![Controller Interface](Deliverables/controller_screenshot.png)
+<img width="539" height="703" alt="image" src="https://github.com/user-attachments/assets/37c18415-9e62-4255-973c-32e270a520d9" />
+<img width="536" height="668" alt="image" src="https://github.com/user-attachments/assets/f11abfb7-d048-43f5-83da-35b8e1bdfa3c" />)
 
 - **Multi-Device Grid:** Tested 2 devices, each creating different colored pixels simultaneously. The terminal output below confirms the simultaneous operation of the Mac Server (top window) and the Pi Publisher (bottom window), demonstrating the end-to-end distributed system flow.
 ![Controller Interface](Deliverables/app.py_terminal_screenshot.png)
@@ -262,10 +259,10 @@ The core difference between clients is the MAC address that serves as the Player
 
 | Device | Collaborator | Hardware                    | Setup Photo                            |
 |--------|--------------|---------------------------------|--------------------------------------|
-| Pi #1  | Jesse        | ST7789 Display, GPIO Buttons (Pins 23, 24) | ![Pi 1 Setup](Deliverables/pi1_setup.jpg) |
-| Pi #2  | Kyle         | ST7789 Display, GPIO Buttons (Pins 23, 24) | ![Pi 2 Setup](Deliverables/pi2_setup.jpg) |
-| Pi #3  | Angela       | ST7789 Display, GPIO Buttons (Pins 23, 24) | ![Pi 3 Setup](Deliverables/pi3_setup.jpg) |
-| Pi #4  | Nophar       | ST7789 Display, GPIO Buttons (Pins 23, 24) | ![Pi 4 Setup](Deliverables/pi4_setup.jpg) |
+| Pi #1  | Jesse        | ST7789 Display, GPIO Buttons (Pins 23, 24) | <img width="532" height="441" alt="image" src="https://github.com/user-attachments/assets/9d156ae5-f910-4b5c-bd77-82e2a517fd59" /> |
+| Pi #2  | Kyle         | ST7789 Display, GPIO Buttons (Pins 23, 24) | <img width="528" height="399" alt="image" src="https://github.com/user-attachments/assets/2731ea66-afc8-4ece-8d2e-8d0a42a41ace" /> |
+| Pi #3  | Angela       | ST7789 Display, GPIO Buttons (Pins 23, 24) | 
+| Pi #4  | Nophar       | ST7789 Display, GPIO Buttons (Pins 23, 24) |
 
 ### Server/Central Processing (Computation)
 
