@@ -238,7 +238,7 @@ The client application is contained within the **`bird_client.py`** script (or i
 
 - **Hardware:** **ST7789 Display** (Output), **GPIO Buttons** (Pins 23/24 for Input).
 - **MQTT Role:** Publisher/Subscriber (Both).
-- **Code Reference:**  [Common Client Code](/Deliverables/bird_client.py)
+- **Code Reference:**  [Common Client Code](/count_client.py)
 
 #### Key Code Snippet: Input Logic
 This function, executed identically on all Pi devices, handles player input to increment or decrement the guess.  
